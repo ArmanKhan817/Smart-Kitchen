@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html >
+
+<style>
+  .table
+  {
+    width: 400px;
+    border: 1px solid black;
+	    margin: 50px;
+  }
+  .bg{
+  background-image:url('images/picture.jpg');
+  background-position:cover;
+  background-size:cover;
+      background-repeat: no-repeat;
+	    background-repeat: no-repeat;
+
+height: 750px;
+   }
+</style>
+<body  style="text-align:center; height:100%;">
+
+<div class="bg">
+  <div style="width: 500px; height:350px; margin-top:1%;
+    opacity: .8;
+    text-align: center;
+    display: inline-table;
+	    background-color: antiquewhite;">
+    <h1 style="margin-top:80px;text-transform: uppercase;background-color: #e1530bb5;margin-top:60px; margin-left:100px; margin-right:100px;">Shopping List</h1>
+
+    <h3 style="font-family:calibri; font-size: 18px;
+    text-transform: uppercase;">Type your ID to see the Status of your Things</h3>
+
+    <form action="" onsubmit="getAndShowItemData(event)">
+      <b>Enter Your ID:</b>
+      <input style="border-radius: 10px;" type="text" id="txt1" onkeyup="showHint(this.value); getAndShowItemData(event)">
+    </form>
+    <table class="table" id="items-table">
+      <thead>
+        <tr>
+          <th>Items</th>
+          <th>Picture</th>
+          <th>Quantity</th>
+          <th>Units</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+  <script>
+    var singleAjax;
+    function showHint(str) {
+      var xhttp;
+      if (str.length == 0) {
+        document.getElementById("txtHint").innerHTML = "";
+        return;
+      }
+      xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          document.getElementById("txtHint").innerHTML = this.responseText;
+        }
+      };
+      xhttp.open("GET", "https://d3ryooe6sc.execute-api.us-west-2.amazonaws.com/dev/getThingsDetails?customerid=" + str,
+        true);
+      xhttp.send();
+    }
+
+    function get(url, callback) {
+      var xhttp;
+      xhttp = new XMLHttpRequest();
+      xhttp.callback = callback;
+      xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          if (this.callback)
+            callback(this.responseText);
+        }
+      };
+      xhttp.open("GET", url, true);
+      xhttp.send();
+      return xhttp;
+    }
+
+    function getAndShowItemData(event) {
+      event.preventDefault();
+      if(singleAjax && singleAjax.readyState < 4)
+        singleAjax.abort();
+
+      var search = document.getElementById('txt1').value;
+      singleAjax = get('https://d3ryooe6sc.execute-api.us-west-2.amazonaws.com/dev/getThingsDetails?customerid=' + search,
+        processResponseOfItemSearch);
+    }
+
+    function processResponseOfItemSearch(data) {
+      try {
+        data = JSON.parse(data);
+      } catch (error) {
+        data = {};
+      }
+      displayItemsInTable(data);
+    }
+
+    function clearChildren(parent) {
+      while(parent.firstChild)
+        parent.removeChild(parent.firstChild);
+    }
+
+    function displayItemsInTable(items) {
+      var table = document.getElementById('items-table');
+      var images = {
+        coffee: 'https://images.pexels.com/photos/434213/pexels-photo-434213.jpeg?auto=compress&cs=tinysrgb&h=350',
+        milk: 'https://boygeniusreport.files.wordpress.com/2015/06/egg.jpg?quality=98&strip=all&w=782',
+        egg: 'http://thedairytimes.com/wp-content/uploads/2017/04/milk.jpg',
+        chicken: 'https://5.imimg.com/data5/IQ/NS/MY-11305339/whole-uncooked-raw-chicken-500x500.jpg',
+        vegetables: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUypnHsxOd_MzbMwNtYJfc2aMnvvhaUtCpdaycSl1ibTaQydBL',
+        fruits: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqgPLYDp3RisZGuVKrMXa0ulzeiq4B9vqVOZ9aC14Vi0Q0M8T8',
+        fish: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpIYH85hhwKMcOwTJ8HsFhKcP-HwH4o-OwgPwIcCk7oTgs-zKXmw',
+        beef: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQobZMoaht2hQRJdOe--unJgi0pmm4cruI3lO9ARm0kH2bcORGkdg',
+        gas: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzgeTH10X5XQOLgwdyZKrVn4Utt3v3J8IDRTl52gV8vUAdkXZZ9Q',
+        waterconsumption: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTf9FHaNlpCYRWO3j3xagN7PxUmZUedPmbIMzjBrmxUbeTc5qkU0Q'
+
+        
+        
+      };
+      if(items.Item)
+      {
+        if(table.getElementsByTagName('tbody').length)
+          table.removeChild(table.getElementsByTagName('tbody')[0]);
+        var html = `
+        <tr><td>Coffee</td><td><img src='${images.coffee}' height='40px' width='70px' alt=''></td><td>${items.Item.Coffee}</td><td>kg</td></tr>
+        <tr><td>Egg</td><td><img src='${images.milk}' height='40px' width='70px' alt=''></td><td>${items.Item.Egg}</td><td>kg</td></tr>
+        <tr><td>Milk</td><td><img src='${images.egg}' height='40px' width='70px' alt=''></td><td>${items.Item.Milk}</td><td>ml</td></tr>
+        <tr><td>Chicken</td><td><img src='${images.chicken}' height='40px' width='70px' alt=''></td><td>${items.Item.Chicken}</td><td>kg</td></tr>
+        <tr><td>Vegetables</td><td><img src='${images.vegetables}' height='40px' width='70px' alt=''></td><td>${items.Item.Vegetables}</td><td>kg</td></tr>
+        <tr><td>Fruits</td><td><img src='${images.fruits}' height='40px' width='70px' alt=''></td><td>${items.Item.Fruits}</td><td>kg</td></tr>
+        <tr><td>Fish</td><td><img src='${images.fish}' height='40px' width='70px' alt=''></td><td>${items.Item.Fish}</td><td>kg</td></tr>
+        <tr><td>Beef</td><td><img src='${images.beef}' height='40px' width='70px' alt=''></td><td>${items.Item.Beef}</td><td>kg</td></tr>
+        <tr><td>Gas</td><td><img src='${images.gas}' height='40px' width='70px' alt=''></td><td>${items.Item.Gas}</td><td>mj</td></tr>
+        <tr><td>Water Consumption</td><td><img src='${images.waterconsumption}' height='40px' width='70px' alt=''></td><td>${items.Item.Waterconsumption}</td><td>ltrs</td></tr>
+        
+
+
+      `;
+        var tbody = document.createElement('tbody');
+        tbody.innerHTML = html;
+        table.appendChild(tbody);
+      }
+      else
+      {
+        clearChildren(table.getElementsByTagName('tbody'));
+      }
+    }
+  </script>
+</div>
+</body>
+
+</html>
